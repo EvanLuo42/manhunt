@@ -2,3 +2,7 @@ main: cc.el42.manhunt.Main
 name: Manhunt
 version: 0.1.0
 api-version: 1.20
+
+commands:
+  manhunt:
+    description: Manhunt command

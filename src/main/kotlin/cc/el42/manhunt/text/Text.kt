@@ -3,31 +3,40 @@ package cc.el42.manhunt.text
 import net.md_5.bungee.api.ChatColor
 import net.md_5.bungee.api.chat.TextComponent
 
-fun String.config(type: TextType, config:(String) -> Unit = {}): TextComponent {
+fun String.config(type: TextType, config:(TextComponent) -> Unit = {}): TextComponent {
     val text = TextComponent(this)
     when (type) {
         TextType.Success -> {
-            text.color = ChatColor.GREEN
-            text.isBold = true
-            config(this)
+            text.apply {
+                color = ChatColor.GREEN
+            }.also {
+                config(it)
+            }
         }
 
         TextType.Failed -> {
-            text.color = ChatColor.RED
-            text.isBold = true
-            config(this)
+            text.apply {
+                color = ChatColor.RED
+            }.also {
+                config(it)
+            }
         }
         TextType.Warn -> {
-            text.color = ChatColor.YELLOW
-            text.isBold = true
-            config(this)
+            text.apply {
+                color = ChatColor.YELLOW
+            }.also {
+                config(it)
+            }
         }
         TextType.Info -> {
-            text.isBold = false
-            config(this)
+            text.apply {
+                isBold = false
+            }.also {
+                config(it)
+            }
         }
         TextType.Custom -> {
-            config(this)
+            config(text)
         }
     }
     return text
@@ -41,10 +50,20 @@ fun String.warn(): TextComponent {
     return this.config(TextType.Warn)
 }
 
+fun String.yellow(): TextComponent {
+    return this.config(TextType.Custom) {
+        it.color = ChatColor.YELLOW
+    }
+}
+
 fun String.success(): TextComponent {
     return this.config(TextType.Success)
 }
 
+fun String.failed(config: (TextComponent) -> Unit): TextComponent {
+    return this.config(TextType.Failed, config)
+}
+
 fun String.failed(): TextComponent {
-    return this.config(TextType.Failed)
+    return this.failed(config = {})
 }
