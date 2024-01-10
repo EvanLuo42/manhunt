@@ -3,41 +3,31 @@ package cc.el42.manhunt.text
 import net.md_5.bungee.api.ChatColor
 import net.md_5.bungee.api.chat.TextComponent
 
-fun String.config(type: TextType, config:(TextComponent) -> Unit = {}): TextComponent {
+fun String.config(type: TextType): TextComponent {
     val text = TextComponent(this)
     when (type) {
         TextType.Success -> {
             text.apply {
                 color = ChatColor.GREEN
-            }.also {
-                config(it)
             }
         }
 
         TextType.Failed -> {
             text.apply {
                 color = ChatColor.RED
-            }.also {
-                config(it)
             }
         }
         TextType.Warn -> {
             text.apply {
                 color = ChatColor.YELLOW
-            }.also {
-                config(it)
             }
         }
         TextType.Info -> {
             text.apply {
                 isBold = false
-            }.also {
-                config(it)
             }
         }
-        TextType.Custom -> {
-            config(text)
-        }
+        TextType.Custom -> {}
     }
     return text
 }
@@ -51,8 +41,8 @@ fun String.warn(): TextComponent {
 }
 
 fun String.yellow(): TextComponent {
-    return this.config(TextType.Custom) {
-        it.color = ChatColor.YELLOW
+    return this.config(TextType.Custom).apply {
+        this.color = ChatColor.YELLOW
     }
 }
 
@@ -60,10 +50,6 @@ fun String.success(): TextComponent {
     return this.config(TextType.Success)
 }
 
-fun String.failed(config: (TextComponent) -> Unit): TextComponent {
-    return this.config(TextType.Failed, config)
-}
-
 fun String.failed(): TextComponent {
-    return this.failed(config = {})
+    return this.config(TextType.Failed)
 }

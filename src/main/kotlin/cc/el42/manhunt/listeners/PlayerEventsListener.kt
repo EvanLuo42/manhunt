@@ -2,6 +2,7 @@ package cc.el42.manhunt.listeners
 
 import cc.el42.manhunt.Context
 import cc.el42.manhunt.player.PlayerRole
+import cc.el42.manhunt.runners
 import cc.el42.manhunt.text.failed
 import cc.el42.manhunt.text.success
 import cc.el42.manhunt.text.yellow
@@ -38,9 +39,7 @@ class PlayerEventsListener(private val context: Context): Listener {
         deadPlayer.dead = true
         deadPlayerEntity.gameMode = GameMode.SPECTATOR
 
-        if (context.players
-            .filter{ it.value.role == PlayerRole.RUNNER }
-            .filter { !it.value.dead }.isNotEmpty()) return
+        if (context.players.runners().filter { !it.value.dead }.isNotEmpty()) return
 
         hunterWin()
         stopGame()
