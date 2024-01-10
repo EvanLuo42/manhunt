@@ -4,13 +4,19 @@ import cc.el42.manhunt.Context
 import cc.el42.manhunt.player.PlayerRole
 import cc.el42.manhunt.text.failed
 import cc.el42.manhunt.text.success
+import cc.el42.manhunt.text.yellow
+import net.md_5.bungee.api.ChatMessageType
 import org.bukkit.Bukkit
 import org.bukkit.GameMode
+import org.bukkit.Material
 import org.bukkit.entity.EnderDragon
 import org.bukkit.entity.Player
 import org.bukkit.event.EventHandler
 import org.bukkit.event.Listener
 import org.bukkit.event.entity.EntityDeathEvent
+import org.bukkit.event.player.PlayerDropItemEvent
+import org.bukkit.event.player.PlayerItemHeldEvent
+import org.bukkit.inventory.meta.CompassMeta
 
 class PlayerEventsListener(private val context: Context): Listener {
     init {
@@ -27,13 +33,13 @@ class PlayerEventsListener(private val context: Context): Listener {
 
         if (!context.players.containsKey(deadPlayerEntity.uniqueId)) return
         val deadPlayer = context.players[deadPlayerEntity.uniqueId]
-        if (deadPlayer?.role != PlayerRole.Runner) return
+        if (deadPlayer?.role != PlayerRole.RUNNER) return
 
         deadPlayer.dead = true
         deadPlayerEntity.gameMode = GameMode.SPECTATOR
 
         if (context.players
-            .filter{ it.value.role == PlayerRole.Runner }
+            .filter{ it.value.role == PlayerRole.RUNNER }
             .filter { !it.value.dead }.isNotEmpty()) return
 
         hunterWin()
@@ -46,6 +52,27 @@ class PlayerEventsListener(private val context: Context): Listener {
 
         runnerWin()
         stopGame()
+    }
+
+    @EventHandler
+    fun onPlayerDropCompass(dropItemEvent: PlayerDropItemEvent) {
+        if (!context.isGaming) return
+        if (dropItemEvent.itemDrop.itemStack.type != Material.COMPASS) return
+        if (context.players[dropItemEvent.player.uniqueId]?.role != PlayerRole.HUNTER) return
+        dropItemEvent.isCancelled = true
+    }
+
+    @EventHandler
+    fun onPlayerHeldCompass(itemHeldEvent: PlayerItemHeldEvent) {
+        if (!context.isGaming) return
+        if (itemHeldEvent.player.inventory.itemInMainHand.type != Material.COMPASS) return
+        val trackingLocation =
+            (itemHeldEvent.player.inventory.itemInMainHand.itemMeta as CompassMeta).lodestone ?: return
+        val distance = itemHeldEvent.player.location.distance(trackingLocation)
+        itemHeldEvent.player.spigot().sendMessage(ChatMessageType.ACTION_BAR, "You are ".yellow().apply {
+            this.addExtra("$distance".success())
+            this.addExtra(" blocks from ")
+        })
     }
 
     private fun stopGame() {
@@ -74,7 +101,7 @@ class PlayerEventsListener(private val context: Context): Listener {
 
     private fun win(hunterTitle: String, runnerTitle: String, subtitle: String) {
         context.players
-            .filter { it.value.role == PlayerRole.Runner }
+            .filter { it.value.role == PlayerRole.RUNNER }
             .forEach { (uuid, _) ->
                 val player = Bukkit.getPlayer(uuid)
                 player?.sendTitle(
@@ -88,7 +115,7 @@ class PlayerEventsListener(private val context: Context): Listener {
             }
 
         context.players
-            .filter { it.value.role == PlayerRole.Hunter }
+            .filter { it.value.role == PlayerRole.HUNTER }
             .forEach { (uuid, _) ->
                 Bukkit.getPlayer(uuid)?.sendTitle(
                     hunterTitle,

@@ -26,7 +26,7 @@ class RunnerCommand(private val context: Context): CommandExecutor {
     private fun addRunner(sender: CommandSender, playerName: String): Boolean {
         Bukkit.getPlayer(playerName)?.let {
             if (context.players.containsKey(it.uniqueId)) return false
-            context.players[it.uniqueId] = PlayerData(PlayerRole.Runner)
+            context.players[it.uniqueId] = PlayerData(PlayerRole.RUNNER)
             sender.spigot().sendMessage("You added $playerName as a runner".success())
             return true
         }
